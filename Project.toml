@@ -1,0 +1,13 @@
+name = "StateMachine"
+uuid = "33480a36-0b8d-4bc8-8e65-c581e569e559"
+authors = ["Martin Kosch"]
+version = "0.1.0"
+
+[compat]
+julia = "1.4"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
