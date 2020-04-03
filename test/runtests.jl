@@ -1,6 +1,6 @@
-using StateMachine
+using Automaton
 using Test
 
-@testset "StateMachine.jl" begin
+@testset "Automaton.jl" begin
     # Write your own tests here.
 end

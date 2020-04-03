@@ -1,4 +1,4 @@
-name = "StateMachine"
+name = "Automaton"
 uuid = "33480a36-0b8d-4bc8-8e65-c581e569e559"
 authors = ["Martin Kosch"]
 version = "0.1.0"
