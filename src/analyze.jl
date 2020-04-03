@@ -6,17 +6,18 @@ function is_connected(state_machine::StateMachine, to::Symbol, from::Symbol=stat
 end
 
 function is_switchable(state_machine::StateMachine, transition::Symbol)
-    (state_machine[:transition].from == state_machine.current) || return false
+    (state_machine.transitions[transition].from == state_machine.current) || return false
     is_conditions_fulfilled(state_machine, transition) || return false
     return true
 end
 
 function is_conditions_fulfilled(state_machine::StateMachine, transition::Symbol)
-    if isa(state_machine[:transition].conditions, OrderedDict)
-        for condition in values(state_machine[:transition].conditions)
+    if isa(state_machine.transitions[transition].conditions, OrderedDict)
+        for condition in values(state_machine.transitions[transition].conditions)
             condition() || return false # Test all conditions #TODO: Specify condition arguments
         end
     end
+    return true
 end
 
 function next_transitions(state_machine::StateMachine, state::Symbol=state_machine.current)

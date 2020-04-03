@@ -34,9 +34,10 @@ end
 
 mutable struct State <: AbstractState
     callbacks::Union{StateCallback,Nothing}
-    function State(;callbacks=nothing)
-        return new(callbacks)
-    end
+end
+
+function State(;callbacks=nothing)
+    return State(callbacks)
 end
 
 mutable struct Transition <: AbstractTransition
@@ -44,9 +45,10 @@ mutable struct Transition <: AbstractTransition
     to::Symbol
     conditions::Union{OrderedDict{Symbol,Any},Nothing}
     callbacks::Union{TransitionCallback,Nothing}
-    function Transition(from::Symbol, to::Symbol; conditions=nothing, callbacks=nothing)
-        return new(from, to, conditions, callbacks)
-    end
+end
+
+function Transition(from::Symbol, to::Symbol; conditions=nothing, callbacks=nothing)
+    return Transition(from, to, conditions, callbacks)
 end
 
 mutable struct StateMachine
@@ -55,13 +57,14 @@ mutable struct StateMachine
     initial::Symbol
     callbacks::Union{StateMachineCallback,Nothing}
     current::Union{Symbol, Nothing}
-    function StateMachine(states::Dict{Symbol,<:AbstractState},
-        transitions::Dict{Symbol,<:AbstractTransition},
-        initial::Union{Symbol,Nothing};
-        callbacks=nothing,
-        current=nothing)
-        return new(states, transitions, initial, callbacks, current)
-    end
+end
+
+function StateMachine(states::Dict{Symbol,<:AbstractState},
+    transitions::Dict{Symbol,<:AbstractTransition},
+    initial::Union{Symbol,Nothing};
+    callbacks=nothing,
+    current=nothing)
+    return StateMachine(states, transitions, initial, callbacks, current)
 end
 
 function StateMachine(transitions::Dict{Symbol,<:AbstractTransition},

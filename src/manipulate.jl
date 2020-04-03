@@ -8,7 +8,7 @@ end
 function add_transition!(state_machine::StateMachine,
     transition::Symbol;
     callbacks::Union{TransitionCallback,Nothing}=nothing,
-    conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing;
+    conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing,
     overwrite::Bool=false)
 
 end
