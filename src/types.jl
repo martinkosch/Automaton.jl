@@ -62,32 +62,22 @@ end
 mutable struct StateMachine
     states::Dict{Symbol,<:AbstractState}
     transitions::Dict{Symbol,<:AbstractTransition}
-    initial::Symbol
+    initial::Union{Symbol,Nothing}
     callbacks::Union{StateMachineCallback,Nothing}
-    current::Symbol
-end
-
-function StateMachine(states::Dict{Symbol,<:AbstractState},
-    transitions,
-    initial;
-    callbacks=nothing,
-    current=initial)
-    return StateMachine(states, transitions, initial, callbacks, current)
-end
-
-function StateMachine(transitions::Dict{Symbol,<:AbstractTransition},
-    initial;
-    callbacks=nothing,
-    current=initial)
-    states = extract_states(transitions)
-    return StateMachine(states, transitions, initial, callbacks=callbacks; current=current)
-end
-
-function extract_states(transitions::Dict{Symbol,<:AbstractTransition})
-    states = Dict{Symbol,State}()
-    for value in values(transitions)
-        haskey(states, value.from) || (states[value.from] = State())
-        haskey(states, value.to) || (states[value.to] = State())
+    current::Union{Symbol,Nothing}
+    function StateMachine(states=Dict{Symbol,AbstractState}(),
+        transitions=Dict{Symbol,AbstractTransition}();
+        initial=nothing,
+        callbacks=nothing)
+        return new(states, transitions, initial, callbacks, nothing)
     end
-    return states
 end
+
+# function extract_states(transitions::Dict{Symbol,<:AbstractTransition})
+#     states = Dict{Symbol,State}()
+#     for value in values(transitions)
+#         haskey(states, value.from) || (states[value.from] = State())
+#         haskey(states, value.to) || (states[value.to] = State())
+#     end
+#     return states
+# end

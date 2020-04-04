@@ -1,3 +1,8 @@
+function add_initial!(state_machine::StateMachine, intial_state_key::Symbol)
+    state_machine.initial = intial_state_key
+    return true
+end
+
 function add_state!(state_machine::StateMachine,
     state_key::Symbol;
     callbacks::Union{StateCallback,Nothing}=nothing,
@@ -141,7 +146,7 @@ function new_unique_key(state_machine::StateMachine, type::Type; identifier::Abs
 end
 
 function new_unique_key(dict::Dict{Symbol,<:Any}, type, identifier::AbstractString)
-    number = count([isa(value,type) for value in values(dict)])
+    number = count([isa(value,type) for value in values(dict)]) + 1
     while haskey(dict, Symbol(identifier, number))
         number = number + 1
     end
