@@ -1,5 +1,3 @@
-abstract type AbstractState end
-abstract type AbstractTransition end
 
 mutable struct StateCallback
     arrival::OrderedDict{Symbol,Any}
@@ -34,6 +32,9 @@ mutable struct StateMachineCallback
     end
 end
 
+
+abstract type AbstractState end
+
 mutable struct State <: AbstractState
     callbacks::Union{StateCallback,Nothing}
 end
@@ -43,6 +44,9 @@ function State(;callbacks=nothing)
 end
 
 struct Junction <: AbstractState end
+
+
+abstract type AbstractTransition end
 
 mutable struct Transition <: AbstractTransition
     from::Symbol
