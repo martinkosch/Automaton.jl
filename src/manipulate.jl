@@ -1,28 +1,63 @@
-function add_initial!(state_machine::StateMachine, intial_state_key::Symbol)
-    state_machine.initial = intial_state_key
-    return true
+function set_initial!(state_machine::StateMachine, intial_state_key::Symbol)
+    if haskey(state_machine.states, intial_state_key)
+        if isa(state_machine.states[intial_state_key], State)
+            state_machine.initial = intial_state_key
+        else
+            error("$intial_state_key does already exist but is not of type State!")
+        end
+    else
+        add_state!(state_machine, intial_state_key)
+        state_machine.initial = intial_state_key
+    end
+    return intial_state_key
+end
+
+function _add_state!(state_machine::StateMachine,
+type::Type{<:AbstractState},
+state_key::Symbol;
+callbacks::Union{StateCallback,Nothing}=nothing,
+overwrite::Bool=false)
+    if haskey(state_machine.states, state_key) && !overwrite
+            error("$state_key already exists! Use overwrite keyword to replace current entry.")
+    end
+    if type == State
+        state_machine.states[state_key] = State(;callbacks=callbacks)
+    elseif type == Junction
+        state_machine.states[state_key] = Junction()
+    end
+    return state_key
 end
 
 function add_state!(state_machine::StateMachine,
-    state_key::Symbol;
-    callbacks::Union{StateCallback,Nothing}=nothing,
-    overwrite::Bool=false,
-    only_if_new::Bool=false)
-    if haskey(state_machine.states, state_key) && !overwrite
-        if only_if_new
-            return state_key
-        else
-            error("$state_key already exists! Use overwrite keyword to replace current entry.")
-        end
-    end
-    state_machine.states[state_key] = State(;callbacks=callbacks)
-    return state_key
+state_key::Symbol;
+callbacks::Union{StateCallback,Nothing}=nothing,
+overwrite::Bool=false)
+    _add_state!(state_machine,
+    State,
+    state_key;
+    callbacks=callbacks,
+    overwrite=overwrite)
 end
 
 function add_state!(state_machine; callbacks=nothing)
     state_key = new_unique_key(state_machine, State)
-    add_state!(state_machine, state_key; callbacks=callbacks)
+    _add_state!(state_machine, State, state_key; callbacks=callbacks)
 end
+
+function add_junction!(state_machine::StateMachine,
+junction::Symbol;
+overwrite::Bool=false)
+    _add_state!(state_machine,
+    Junction,
+    junction;
+    overwrite=overwrite)
+end
+
+function add_junction!(state_machine)
+    junction_key = new_unique_key(state_machine, Junction)
+    _add_state!(state_machine, Junction, junction_key)
+end
+
 
 function remove_state!(state_machine::StateMachine,
     state_key::Symbol)
@@ -32,33 +67,39 @@ function remove_state!(state_machine::StateMachine,
         for transition in affected_transitions
             remove_transition!(state_machine, transition)
         end
-        return true
+        return state_key
     else
-        return false
+        error("$state_key does not exist!")
     end
 end
 
 function add_transition!(state_machine::StateMachine,
-    transition_key::Symbol,
-    from_key::Symbol,
-    to_key::Symbol;
-    callbacks::Union{TransitionCallback,Nothing}=nothing,
-    conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing,
-    overwrite::Bool=false)
+transition_key::Symbol,
+from_key::Symbol,
+to_key::Symbol;
+callbacks::Union{TransitionCallback,Nothing}=nothing,
+conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing,
+overwrite::Bool=false)
     if haskey(state_machine.transitions, transition_key) && !overwrite
         error("$transition_key already exists! Use overwrite keyword to replace current entry.")
     end
-    state_machine.transitions[transition_key] = Transition(from_key, to_key;callbacks=callbacks, conditions=conditions)
-    add_state!(state_machine, from_key; only_if_new=true)
-    add_state!(state_machine, to_key; only_if_new=true)
-    return transition_key
+    has_from = haskey(state_machine.states, from_key)
+    has_to = haskey(state_machine.states, to_key)
+    if !has_from && !has_to
+        error("The states $from_key and $to_key do not exist! They need to be created before they can be connected.")
+    elseif !has_from || !has_to
+        error("The state $(!has_from ? from_key : to_key) does not exist! It has to be created first.")
+    else
+        state_machine.transitions[transition_key] = Transition(from_key, to_key;callbacks=callbacks, conditions=conditions)
+        return transition_key
+    end
 end
 
 function add_transition!(state_machine,
-    from_key::Symbol,
-    to_key::Symbol;
-    callbacks=nothing,
-    conditions=nothing)
+from_key::Symbol,
+to_key::Symbol;
+callbacks=nothing,
+conditions=nothing)
     transition_key = new_unique_key(state_machine, Transition)
     add_transition!(state_machine, transition_key, from_key, to_key;
     callbacks=callbacks, conditions=conditions)
@@ -66,7 +107,7 @@ end
 
 function remove_transition!(state_machine::StateMachine, transition_key::Symbol)
     delete!(state_machine.transitions, transition_key)
-    return true
+    return transition_key
 end
 
 function add_state_machine_callbacks!(state_machine::StateMachine,
