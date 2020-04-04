@@ -2,33 +2,35 @@ abstract type AbstractState end
 abstract type AbstractTransition end
 
 mutable struct StateCallback
-    enter_state::OrderedDict{Symbol,Any}
-    leave_state::OrderedDict{Symbol,Any}
-    function StateCallback(enter_state::OrderedDict{}=OrderedDict(),
-        leave_state::OrderedDict{}=OrderedDict())
-        return new(enter_state, leave_state)
+    arrival::OrderedDict{Symbol,Any}
+    during::OrderedDict{Symbol,Any}
+    departure::OrderedDict{Symbol,Any}
+    function StateCallback(arrival::OrderedDict{}=OrderedDict(),
+        during::OrderedDict{}=OrderedDict(),
+        departure::OrderedDict{}=OrderedDict())
+        return new(arrival, during, departure)
     end
 end
 
 mutable struct TransitionCallback
-    start_transition::OrderedDict{Symbol,Any}
-    end_transition::OrderedDict{Symbol,Any}
-    function TransitionCallback(start_transition::OrderedDict{}=OrderedDict(),
-        end_transition::OrderedDict{}=OrderedDict())
-        return new(start_transition, end_transition)
+    takeoff::OrderedDict{Symbol,Any}
+    landing::OrderedDict{Symbol,Any}
+    function TransitionCallback(takeoff::OrderedDict{}=OrderedDict(),
+        landing::OrderedDict{}=OrderedDict())
+        return new(takeoff, landing)
     end
 end
 
 mutable struct StateMachineCallback
-    start_any_transition::OrderedDict{Symbol,Any}
-    end_any_transition::OrderedDict{Symbol,Any}
-    enter_any_state::OrderedDict{Symbol,Any}
-    leave_any_state::OrderedDict{Symbol,Any}
-    function StateMachineCallback(start_any_transition::OrderedDict{}=OrderedDict(),
-        end_any_transition::OrderedDict=OrderedDict(),
-        enter_any_state::OrderedDict=OrderedDict(),
-        leave_any_state::OrderedDict=OrderedDict())
-        return new(start_any_transition, end_any_transition, enter_any_state, leave_any_state)
+    any_arrival::OrderedDict{Symbol,Any}
+    any_departure::OrderedDict{Symbol,Any}
+    any_takeoff::OrderedDict{Symbol,Any}
+    any_landing::OrderedDict{Symbol,Any}
+    function StateMachineCallback(any_arrival::OrderedDict{}=OrderedDict(),
+        any_departure::OrderedDict=OrderedDict(),
+        any_takeoff::OrderedDict=OrderedDict(),
+        any_landing::OrderedDict=OrderedDict())
+        return new(any_arrival, any_departure, any_takeoff, any_landing)
     end
 end
 
@@ -39,6 +41,8 @@ end
 function State(;callbacks=nothing)
     return State(callbacks)
 end
+
+struct Junction <: AbstractState end
 
 mutable struct Transition <: AbstractTransition
     from::Symbol
@@ -56,21 +60,21 @@ mutable struct StateMachine
     transitions::Dict{Symbol,<:AbstractTransition}
     initial::Symbol
     callbacks::Union{StateMachineCallback,Nothing}
-    current::Union{Symbol, Nothing}
+    current::Symbol
 end
 
 function StateMachine(states::Dict{Symbol,<:AbstractState},
-    transitions::Dict{Symbol,<:AbstractTransition},
-    initial::Union{Symbol,Nothing};
+    transitions,
+    initial;
     callbacks=nothing,
-    current=nothing)
+    current=initial)
     return StateMachine(states, transitions, initial, callbacks, current)
 end
 
 function StateMachine(transitions::Dict{Symbol,<:AbstractTransition},
-    initial::Symbol;
+    initial;
     callbacks=nothing,
-    current=nothing)
+    current=initial)
     states = extract_states(transitions)
     return StateMachine(states, transitions, initial, callbacks=callbacks; current=current)
 end
