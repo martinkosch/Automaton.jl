@@ -3,11 +3,10 @@ function set_initial!(state_machine::StateMachine, intial_state_key::Symbol)
         if isa(state_machine.states[intial_state_key], State)
             state_machine.initial = intial_state_key
         else
-            error("$intial_state_key does already exist but is not of type State!")
+            error("$intial_state_key does already exist but is not of type State.")
         end
     else
-        add_state!(state_machine, intial_state_key)
-        state_machine.initial = intial_state_key
+        error("$intial_state_key does not exist. It needs to be created before it can be set as initial state.")
     end
     return intial_state_key
 end
@@ -19,7 +18,7 @@ state_key::Symbol;
 callbacks::Union{StateCallback,Nothing}=nothing,
 overwrite::Bool=false)
     if haskey(state_machine.states, state_key) && !overwrite
-            error("$state_key already exists! Use overwrite keyword to replace current entry.")
+            error("$state_key already exists. Use overwrite keyword to replace current entry.")
     end
     if type == State
         state_machine.states[state_key] = State(;callbacks=callbacks)
@@ -66,15 +65,22 @@ state_machine::StateMachine,
 state_key::Symbol)
     if haskey(state_machine.states, state_key)
         delete!(state_machine.states, state_key)
+        if state_machine.initial == state_key
+            state_machine.initial = nothing
+        end
+
         affected_transitions = all_adjacent_transitions(state_machine, state_key)
         for transition in affected_transitions
             remove_transition!(state_machine, transition)
         end
         return state_key
     else
-        error("$state_key does not exist!")
+        error("$state_key does not exist.")
     end
 end
+
+remove_junction!(state_machine::StateMachine, junction_key::Symbol) =
+remove_state!(state_machine, junction_key)
 
 function add_transition!(
 state_machine::StateMachine,
@@ -85,14 +91,14 @@ callbacks::Union{TransitionCallback,Nothing}=nothing,
 conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing,
 overwrite::Bool=false)
     if haskey(state_machine.transitions, transition_key) && !overwrite
-        error("$transition_key already exists! Use overwrite keyword to replace current entry.")
+        error("$transition_key already exists. Use overwrite keyword to replace current entry.")
     end
     has_from = haskey(state_machine.states, from_key)
     has_to = haskey(state_machine.states, to_key)
     if !has_from && !has_to
-        error("States $from_key and $to_key do not exist! They need to be created before they can be connected.")
+        error("States $from_key and $to_key do not exist. They need to be created before they can be connected.")
     elseif !has_from || !has_to
-        error("State $(!has_from ? from_key : to_key) does not exist! It has to be created first.")
+        error("State $(!has_from ? from_key : to_key) does not exist. It has to be created first.")
     else
         state_machine.transitions[transition_key] = Transition(from_key, to_key;callbacks=callbacks, conditions=conditions)
         return transition_key

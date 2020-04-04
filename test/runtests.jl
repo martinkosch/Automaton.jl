@@ -23,15 +23,19 @@ using Test
 
     default_transition_key = add_transition!(sm, :state1, :state2)
     @test haskey(sm.transitions, default_transition_key)
+    set_initial!(sm, :state1)
+    @test sm.initial == :state1
     remove_state!(sm, :state1)
+    @test_throws ErrorException set_initial!(sm, :state1)
+    @test sm.initial == nothing
     @test !haskey(sm.transitions, default_transition_key)
     @test haskey(sm.states, :state2)
 
-
-    set_initial!(sm, :state1)
-    @test haskey(sm.states, :state1)
-    set_initial!(sm, :state3)
-    @test haskey(sm.states, :state3)
-
-    add_junction!(sm)
+    add_junction!(sm, :junction1)
+    @test_throws ErrorException set_initial!(sm, :junction1)
+    add_transition!(sm, :transition1, :state2, :junction1)
+    add_transition!(sm, :transition2, :junction1, :state2)
+    remove_junction!(sm, :junction1)
+    @test !haskey(sm.transitions, :transition1)
+    @test !haskey(sm.transitions, :transition2)
 end
