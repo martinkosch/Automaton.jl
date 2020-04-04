@@ -1,10 +1,3 @@
-function initialize!(state_machine::StateMachine)
-    state_machine_callbacks = state_machine.callbacks
-    to_state_callbacks = state_machine.states[state_machine.initial]
-    state_machine.current = state_machine.initial # State change
-    call_callbacks_initialize(state_machine_callbacks, to_state_callbacks)
-end
-
 function fire!(state_machine::StateMachine, transition::Symbol)
     is_switchable(state_machine, transition) || return false
     switch_unsafe!(state_machine, transition)
@@ -28,16 +21,4 @@ function switch_unsafe!(state_machine::StateMachine, transition::Symbol)
     call_callbacks_before(state_machine_callbacks, transition_callbacks, from_state_callbacks)
     state_machine.current = transition.to # State change
     call_callbacks_after(state_machine_callbacks, transition_callbacks, to_state_callbacks)
-end
-
-function call_callbacks_before(state_machine_callbacks, transition_callbacks, from_state_callbacks)
-# TODO: Implement me!
-end
-
-function call_callbacks_after(state_machine_callbacks, transition_callbacks, to_state_callbacks)
-# TODO: Implement me!
-end
-
-function call_callbacks_initialize(state_machine_callbacks, to_state_callbacks)
-# TODO: Implement me!
 end

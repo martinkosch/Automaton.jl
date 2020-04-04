@@ -12,7 +12,8 @@ function set_initial!(state_machine::StateMachine, intial_state_key::Symbol)
     return intial_state_key
 end
 
-function _add_state!(state_machine::StateMachine,
+function _add_state!(
+state_machine::StateMachine,
 type::Type{<:AbstractState},
 state_key::Symbol;
 callbacks::Union{StateCallback,Nothing}=nothing,
@@ -28,7 +29,8 @@ overwrite::Bool=false)
     return state_key
 end
 
-function add_state!(state_machine::StateMachine,
+function add_state!(
+state_machine::StateMachine,
 state_key::Symbol;
 callbacks::Union{StateCallback,Nothing}=nothing,
 overwrite::Bool=false)
@@ -59,8 +61,9 @@ function add_junction!(state_machine)
 end
 
 
-function remove_state!(state_machine::StateMachine,
-    state_key::Symbol)
+function remove_state!(
+state_machine::StateMachine,
+state_key::Symbol)
     if haskey(state_machine.states, state_key)
         delete!(state_machine.states, state_key)
         affected_transitions = all_adjacent_transitions(state_machine, state_key)
@@ -73,7 +76,8 @@ function remove_state!(state_machine::StateMachine,
     end
 end
 
-function add_transition!(state_machine::StateMachine,
+function add_transition!(
+state_machine::StateMachine,
 transition_key::Symbol,
 from_key::Symbol,
 to_key::Symbol;
@@ -86,16 +90,17 @@ overwrite::Bool=false)
     has_from = haskey(state_machine.states, from_key)
     has_to = haskey(state_machine.states, to_key)
     if !has_from && !has_to
-        error("The states $from_key and $to_key do not exist! They need to be created before they can be connected.")
+        error("States $from_key and $to_key do not exist! They need to be created before they can be connected.")
     elseif !has_from || !has_to
-        error("The state $(!has_from ? from_key : to_key) does not exist! It has to be created first.")
+        error("State $(!has_from ? from_key : to_key) does not exist! It has to be created first.")
     else
         state_machine.transitions[transition_key] = Transition(from_key, to_key;callbacks=callbacks, conditions=conditions)
         return transition_key
     end
 end
 
-function add_transition!(state_machine,
+function add_transition!(
+state_machine::StateMachine,
 from_key::Symbol,
 to_key::Symbol;
 callbacks=nothing,

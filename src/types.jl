@@ -36,12 +36,12 @@ end
 abstract type AbstractState end
 
 mutable struct State <: AbstractState
-    callbacks::Union{StateCallback,Nothing}
+    callbacks
+    function State(;callbacks::Union{StateCallback,Nothing}=nothing)
+        return new(callbacks)
+    end
 end
 
-function State(;callbacks=nothing)
-    return State(callbacks)
-end
 
 struct Junction <: AbstractState end
 
@@ -49,35 +49,31 @@ struct Junction <: AbstractState end
 abstract type AbstractTransition end
 
 mutable struct Transition <: AbstractTransition
-    from::Symbol
-    to::Symbol
-    conditions::Union{OrderedDict{Symbol,Any},Nothing}
-    callbacks::Union{TransitionCallback,Nothing}
-end
-
-function Transition(from::Symbol, to::Symbol; conditions=nothing, callbacks=nothing)
-    return Transition(from, to, conditions, callbacks)
-end
-
-mutable struct StateMachine
-    states::Dict{Symbol,<:AbstractState}
-    transitions::Dict{Symbol,<:AbstractTransition}
-    initial::Union{Symbol,Nothing}
-    callbacks::Union{StateMachineCallback,Nothing}
-    current::Union{Symbol,Nothing}
-    function StateMachine(states=Dict{Symbol,AbstractState}(),
-        transitions=Dict{Symbol,AbstractTransition}();
-        initial=nothing,
-        callbacks=nothing)
-        return new(states, transitions, initial, callbacks, nothing)
+    from
+    to
+    conditions
+    callbacks
+    function Transition(
+    from::Symbol,
+    to::Symbol;
+    conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing,
+    callbacks::Union{TransitionCallback,Nothing}=nothing)
+        return new(from, to, conditions, callbacks)
     end
 end
 
-# function extract_states(transitions::Dict{Symbol,<:AbstractTransition})
-#     states = Dict{Symbol,State}()
-#     for value in values(transitions)
-#         haskey(states, value.from) || (states[value.from] = State())
-#         haskey(states, value.to) || (states[value.to] = State())
-#     end
-#     return states
-# end
+
+mutable struct StateMachine
+    states
+    transitions
+    initial
+    callbacks
+    current::Union{Symbol,Nothing}
+    function StateMachine(
+    states::Dict{Symbol,<:AbstractState}=Dict{Symbol,AbstractState}(),
+    transitions::Dict{Symbol,<:AbstractTransition}=Dict{Symbol,AbstractTransition}();
+    initial::Union{Symbol,Nothing}=nothing,
+    callbacks::Union{StateMachineCallback,Nothing}=nothing)
+        return new(states, transitions, initial, callbacks, nothing)
+    end
+end
