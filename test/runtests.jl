@@ -8,9 +8,10 @@ using Test
     @test haskey(sm.states, default_state_key)
     remove_state!(sm, default_state_key)
     @test !haskey(sm.states, default_state_key)
-    @test_throws ErrorException add_transition!(sm, :not_there, :also_not_there)
 
+    @test_throws ErrorException add_transition!(sm, :state1, :state2)
     add_state!(sm, :state1)
+    @test_throws ErrorException add_transition!(sm, :state1, :state2)
     add_state!(sm, :state2)
     default_transition_key = add_transition!(sm, :state1, :state2)
     @test haskey(sm.transitions, default_transition_key)
@@ -38,4 +39,9 @@ using Test
     remove_junction!(sm, :junction1)
     @test !haskey(sm.transitions, :transition1)
     @test !haskey(sm.transitions, :transition2)
+end
+
+@testset "Structure analysis" begin
+    # next_transitions, preceeding_transitions, adjacent_transitions
+    # all_source_states, all_sink_states, all_unconnected_states
 end

@@ -36,6 +36,30 @@ function preceeding_transitions(state_machine::StateMachine, state_key::Symbol=s
     return res
 end
 
-function all_adjacent_transitions(state_machine::StateMachine, state_key::Symbol=state_machine.current)
+function adjacent_transitions(state_machine::StateMachine, state_key::Symbol=state_machine.current)
     return [preceeding_transitions(state_machine, state_key); next_transitions(state_machine, state_key)]
+end
+
+function all_source_states(state_machine::StateMachine)
+    res = Vector{Symbol}()
+    for key in state_machine.states
+        (length(preceeding_transitions(state_machine, key)) == 0) && push!(res, key)
+    end
+    return res
+end
+
+function all_sink_states(state_machine::StateMachine)
+    res = Vector{Symbol}()
+    for key in state_machine.states
+        (length(next_transitions(state_machine, key)) == 0) && push!(res, key)
+    end
+    return res
+end
+
+function all_unconnected_states(state_machine::StateMachine)
+    res = Vector{Symbol}()
+    for key in state_machine.states
+        (length(all_adjacent_transitions(state_machine, key)) == 0) && push!(res, key)
+    end
+    return res
 end

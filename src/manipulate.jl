@@ -11,6 +11,10 @@ function set_initial!(state_machine::StateMachine, intial_state_key::Symbol)
     return intial_state_key
 end
 
+function free_initial!(state_machine::StateMachine)
+    state_machine.initial = nothing
+end
+
 function _add_state!(
 state_machine::StateMachine,
 type::Type{<:AbstractState},
