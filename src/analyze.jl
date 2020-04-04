@@ -1,37 +1,41 @@
-function is_connected(state_machine::StateMachine, to::Symbol, from::Symbol=state_machine.current)
+function is_connected(state_machine::StateMachine, to_key::Symbol, from_key::Symbol=state_machine.current)
     for value in values(state_machine.transitions)
-        haskey(states, value.from) && haskey(states, value.to) && return true
+        haskey(states, value.from_key) && haskey(states, value.to_key) && return true
     end
     return false
 end
 
-function is_switchable(state_machine::StateMachine, transition::Symbol)
-    (state_machine.transitions[transition].from == state_machine.current) || return false
-    is_conditions_fulfilled(state_machine, transition) || return false
+function is_switchable(state_machine::StateMachine, transition_key::Symbol)
+    (state_machine.transitions[transition_key].from == state_machine.current) || return false
+    is_conditions_fulfilled(state_machine, transition_key) || return false
     return true
 end
 
-function is_conditions_fulfilled(state_machine::StateMachine, transition::Symbol)
-    if isa(state_machine.transitions[transition].conditions, OrderedDict)
-        for condition in values(state_machine.transitions[transition].conditions)
+function is_conditions_fulfilled(state_machine::StateMachine, transition_key::Symbol)
+    if isa(state_machine.transitions[transition_key].conditions, OrderedDict)
+        for condition in values(state_machine.transitions[transition_key].conditions)
             condition() || return false # Test all conditions #TODO: Specify condition arguments
         end
     end
     return true
 end
 
-function next_transitions(state_machine::StateMachine, state::Symbol=state_machine.current)
+function next_transitions(state_machine::StateMachine, state_key::Symbol=state_machine.current)
     res = Vector{Symbol}()
     for (key, value) in state_machine.transitions
-        (value.from == state) && push!(res, key)
+        (value.from == state_key) && push!(res, key)
     end
     return res
 end
 
-function preceeding_transitions(state_machine::StateMachine, state::Symbol=state_machine.current)
+function preceeding_transitions(state_machine::StateMachine, state_key::Symbol=state_machine.current)
     res = Vector{Symbol}()
     for (key, value) in state_machine.transitions
-        (value.to == state) && push!(res, key)
+        (value.to == state_key) && push!(res, key)
     end
     return res
+end
+
+function all_adjacent_transitions(state_machine::StateMachine, state_key::Symbol=state_machine.current)
+    return [preceeding_transitions(state_machine, state_key); next_transitions(state_machine, state_key)]
 end
