@@ -4,7 +4,7 @@ using OrderedCollections
 
 export State, Junction, Transition, StateMachine
 export is_connected, is_switchable, is_conditions_fulfilled,
-next_transitions, preceeding_transitions, adjacent_transitions
+next_transitions, preceeding_transitions, adjacent_transitions,
 all_source_states, all_sink_states, all_unconnected_states
 export initialize!, fire!, fire_unambiguous!
 export set_initial!, free_initial!,

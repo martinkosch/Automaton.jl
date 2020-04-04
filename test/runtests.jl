@@ -42,6 +42,21 @@ using Test
 end
 
 @testset "Structure analysis" begin
+    sm = StateMachine()
+    @test length(all_source_states(sm)) == 0
+    @test length(all_sink_states(sm)) == 0
+    @test length(all_unconnected_states(sm)) == 0
+    add_state!(sm, :state1)
+    @test length(all_source_states(sm)) == 0
+    @test length(all_sink_states(sm)) == 0
+    @test length(all_unconnected_states(sm)) == 1
+    add_state!(sm, :state2)
+    add_state!(sm, :state3)
+    add_transition!(sm, :state1, :state2)
+    @test length(all_source_states(sm)) == 1
+    @test length(all_sink_states(sm)) == 1
+    @test length(all_unconnected_states(sm)) == 1
+
     # next_transitions, preceeding_transitions, adjacent_transitions
     # all_source_states, all_sink_states, all_unconnected_states
 end

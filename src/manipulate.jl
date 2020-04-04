@@ -73,7 +73,7 @@ state_key::Symbol)
             state_machine.initial = nothing
         end
 
-        affected_transitions = all_adjacent_transitions(state_machine, state_key)
+        affected_transitions = adjacent_transitions(state_machine, state_key)
         for transition in affected_transitions
             remove_transition!(state_machine, transition)
         end
