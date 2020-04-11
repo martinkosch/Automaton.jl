@@ -1,24 +1,39 @@
-function fire!(state_machine::StateMachine, transition::Symbol)
-    is_switchable(state_machine, transition) || return false
-    switch_unsafe!(state_machine, transition)
-    return true
-end
-
-function fire_unambiguous!(state_machine::StateMachine)
-    if isnothing(state_machine.current)
-        initialize!(state_machine)
-    elseif length(next_transitions(state_machine)) == 1
-        fire!(state_machine, next_transitions(state_machine)[1])
+function run!(sm::StateMachine)
+    is_ready_to_run(sm)
+    sm.current = sm.initial
+    while true # TODO: while running pause stop reset
+        fired_t = wait_current_conditions(sm)
+        fire!(sm, fired_t)
     end
 end
 
-function switch_unsafe!(state_machine::StateMachine, transition::Symbol)
-    state_machine_callbacks = state_machine.callbacks
-    transition = state_machine.transitions[transition]
-    transition_callbacks = transition.callbacks
-    from_state_callbacks = state_machine.states[transition.from]
-    to_state_callbacks = state_machine.states[transition.to]
-    call_callbacks_before(state_machine_callbacks, transition_callbacks, from_state_callbacks)
-    state_machine.current = transition.to # State change
-    call_callbacks_after(state_machine_callbacks, transition_callbacks, to_state_callbacks)
+function fire!(sm::StateMachine, t::Symbol)
+    is_switchable(sm, t) || return false
+    switch_unsafe!(sm, t)
+    return true
+end
+
+function fire_unambiguous!(sm::StateMachine)
+    if isnothing(sm.current)
+        initialize!(sm)
+    elseif length(next_transitions(sm)) == 1
+        fire!(sm, next_transitions(sm)[1])
+    end
+end
+
+function switch_unsafe!(sm::StateMachine, t::Symbol)
+    sm_cb = sm.callbacks
+    t = sm.transitions[t]
+    t_cb = t.callbacks
+    from_state_cb = sm.states[t.from]
+    to_state_cb = sm.states[t.to]
+    call_callbacks_before(sm_cb, t_cb, from_state_cb)
+    sm.current = t.to # State change
+    call_callbacks_after(sm_cb, t_cb, to_state_cb)
+end
+
+function is_ready_to_run(sm::StateMachine)
+    if isnothing(sm.initial)
+        error("The inital state has not been set yet.")
+    end
 end

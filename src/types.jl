@@ -1,3 +1,7 @@
+struct CallbackContext
+    statemachine
+    transition
+end
 
 mutable struct StateCallback
     arrival::OrderedDict{Symbol,Any}
@@ -24,11 +28,13 @@ mutable struct StateMachineCallback
     any_departure::OrderedDict{Symbol,Any}
     any_takeoff::OrderedDict{Symbol,Any}
     any_landing::OrderedDict{Symbol,Any}
+    initialization::OrderedDict{Symbol,Any}
     function StateMachineCallback(any_arrival::OrderedDict{}=OrderedDict(),
         any_departure::OrderedDict=OrderedDict(),
         any_takeoff::OrderedDict=OrderedDict(),
-        any_landing::OrderedDict=OrderedDict())
-        return new(any_arrival, any_departure, any_takeoff, any_landing)
+        any_landing::OrderedDict=OrderedDict(),
+        initialization::OrderedDict=OrderedDict())
+        return new(any_arrival, any_departure, any_takeoff, any_landing, initialization)
     end
 end
 

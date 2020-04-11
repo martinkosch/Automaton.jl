@@ -47,15 +47,28 @@ end
     @test length(all_sink_states(sm)) == 0
     @test length(all_unconnected_states(sm)) == 0
     add_state!(sm, :state1)
+    @test isempty(next_transitions(sm, :state1))
+    @test isempty(preceeding_transitions(sm, :state1))
+    @test isempty(adjacent_transitions(sm, :state1))
     @test length(all_source_states(sm)) == 0
     @test length(all_sink_states(sm)) == 0
     @test length(all_unconnected_states(sm)) == 1
     add_state!(sm, :state2)
     add_state!(sm, :state3)
-    add_transition!(sm, :state1, :state2)
+    default_transition_key1 = add_transition!(sm, :state1, :state2)
+    default_transition_key2 = add_transition!(sm, :state2, :state3)
+    @test next_transitions(sm, :state1) == [default_transition_key1]
+    @test isempty(preceeding_transitions(sm, :state1))
+    @test adjacent_transitions(sm, :state1) == [default_transition_key1]
+    @test next_transitions(sm, :state2) == [default_transition_key2]
+    @test preceeding_transitions(sm, :state2) == [default_transition_key1]
+    @test adjacent_transitions(sm, :state2) == [default_transition_key1, default_transition_key2]
+    @test isempty(next_transitions(sm, :state3))
+    @test preceeding_transitions(sm, :state3) == [default_transition_key2]
+    @test adjacent_transitions(sm, :state3) == [default_transition_key2]
     @test length(all_source_states(sm)) == 1
     @test length(all_sink_states(sm)) == 1
-    @test length(all_unconnected_states(sm)) == 1
+    @test length(all_unconnected_states(sm)) == 0
 
     # next_transitions, preceeding_transitions, adjacent_transitions
     # all_source_states, all_sink_states, all_unconnected_states

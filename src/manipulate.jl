@@ -1,7 +1,7 @@
-function set_initial!(state_machine::StateMachine, intial_state_key::Symbol)
-    if haskey(state_machine.states, intial_state_key)
-        if isa(state_machine.states[intial_state_key], State)
-            state_machine.initial = intial_state_key
+function set_initial!(sm::StateMachine, intial_state_key::Symbol)
+    if haskey(sm.states, intial_state_key)
+        if isa(sm.states[intial_state_key], State)
+            sm.initial = intial_state_key
         else
             error("$intial_state_key does already exist but is not of type State.")
         end
@@ -11,71 +11,71 @@ function set_initial!(state_machine::StateMachine, intial_state_key::Symbol)
     return intial_state_key
 end
 
-function free_initial!(state_machine::StateMachine)
-    state_machine.initial = nothing
+function free_initial!(sm::StateMachine)
+    sm.initial = nothing
 end
 
 function _add_state!(
-state_machine::StateMachine,
+sm::StateMachine,
 type::Type{<:AbstractState},
 state_key::Symbol;
 callbacks::Union{StateCallback,Nothing}=nothing,
 overwrite::Bool=false)
-    if haskey(state_machine.states, state_key) && !overwrite
+    if haskey(sm.states, state_key) && !overwrite
             error("$state_key already exists. Use overwrite keyword to replace current entry.")
     end
     if type == State
-        state_machine.states[state_key] = State(;callbacks=callbacks)
+        sm.states[state_key] = State(;callbacks=callbacks)
     elseif type == Junction
-        state_machine.states[state_key] = Junction()
+        sm.states[state_key] = Junction()
     end
     return state_key
 end
 
 function add_state!(
-state_machine::StateMachine,
+sm::StateMachine,
 state_key::Symbol;
 callbacks::Union{StateCallback,Nothing}=nothing,
 overwrite::Bool=false)
-    _add_state!(state_machine,
+    _add_state!(sm,
     State,
     state_key;
     callbacks=callbacks,
     overwrite=overwrite)
 end
 
-function add_state!(state_machine; callbacks=nothing)
-    state_key = new_unique_key(state_machine, State)
-    _add_state!(state_machine, State, state_key; callbacks=callbacks)
+function add_state!(sm; callbacks=nothing)
+    state_key = new_unique_key(sm, State)
+    _add_state!(sm, State, state_key; callbacks=callbacks)
 end
 
-function add_junction!(state_machine::StateMachine,
+function add_junction!(sm::StateMachine,
 junction::Symbol;
 overwrite::Bool=false)
-    _add_state!(state_machine,
+    _add_state!(sm,
     Junction,
     junction;
     overwrite=overwrite)
 end
 
-function add_junction!(state_machine)
-    junction_key = new_unique_key(state_machine, Junction)
-    _add_state!(state_machine, Junction, junction_key)
+function add_junction!(sm)
+    junction_key = new_unique_key(sm, Junction)
+    _add_state!(sm, Junction, junction_key)
 end
 
 
 function remove_state!(
-state_machine::StateMachine,
+sm::StateMachine,
 state_key::Symbol)
-    if haskey(state_machine.states, state_key)
-        delete!(state_machine.states, state_key)
-        if state_machine.initial == state_key
-            state_machine.initial = nothing
+    if haskey(sm.states, state_key)
+        delete!(sm.states, state_key)
+        if sm.initial == state_key
+            sm.initial = nothing
         end
 
-        affected_transitions = adjacent_transitions(state_machine, state_key)
+        affected_transitions = adjacent_transitions(sm, state_key)
         for transition in affected_transitions
-            remove_transition!(state_machine, transition)
+            remove_transition!(sm, transition)
         end
         return state_key
     else
@@ -83,118 +83,118 @@ state_key::Symbol)
     end
 end
 
-remove_junction!(state_machine::StateMachine, junction_key::Symbol) =
-remove_state!(state_machine, junction_key)
+remove_junction!(sm::StateMachine, junction_key::Symbol) =
+remove_state!(sm, junction_key)
 
 function add_transition!(
-state_machine::StateMachine,
+sm::StateMachine,
 transition_key::Symbol,
 from_key::Symbol,
 to_key::Symbol;
 callbacks::Union{TransitionCallback,Nothing}=nothing,
 conditions::Union{OrderedDict{Symbol,Any},Nothing}=nothing,
 overwrite::Bool=false)
-    if haskey(state_machine.transitions, transition_key) && !overwrite
+    if haskey(sm.transitions, transition_key) && !overwrite
         error("$transition_key already exists. Use overwrite keyword to replace current entry.")
     end
-    has_from = haskey(state_machine.states, from_key)
-    has_to = haskey(state_machine.states, to_key)
+    has_from = haskey(sm.states, from_key)
+    has_to = haskey(sm.states, to_key)
     if !has_from && !has_to
         error("States $from_key and $to_key do not exist. They need to be created before they can be connected.")
     elseif !has_from || !has_to
         error("State $(!has_from ? from_key : to_key) does not exist. It has to be created first.")
     else
-        state_machine.transitions[transition_key] = Transition(from_key, to_key;callbacks=callbacks, conditions=conditions)
+        sm.transitions[transition_key] = Transition(from_key, to_key;callbacks=callbacks, conditions=conditions)
         return transition_key
     end
 end
 
 function add_transition!(
-state_machine::StateMachine,
+sm::StateMachine,
 from_key::Symbol,
 to_key::Symbol;
 callbacks=nothing,
 conditions=nothing)
-    transition_key = new_unique_key(state_machine, Transition)
-    add_transition!(state_machine, transition_key, from_key, to_key;
+    transition_key = new_unique_key(sm, Transition)
+    add_transition!(sm, transition_key, from_key, to_key;
     callbacks=callbacks, conditions=conditions)
 end
 
-function remove_transition!(state_machine::StateMachine, transition_key::Symbol)
-    delete!(state_machine.transitions, transition_key)
+function remove_transition!(sm::StateMachine, transition_key::Symbol)
+    delete!(sm.transitions, transition_key)
     return transition_key
 end
 
-function add_state_machine_callbacks!(state_machine::StateMachine,
+function add_state_machine_callbacks!(sm::StateMachine,
     callbacks::StateMachineCallback)
 
 end
 
-function replace_state_machine_callbacks!(state_machine::StateMachine,
+function replace_state_machine_callbacks!(sm::StateMachine,
     callbacks::Union{StateMachineCallback,Nothing})
 
 end
 
-remove_state_machine_callbacks!(state_machine::StateMachine) =
-replace_state_machine_callbacks!(state_machine, nothing)
+remove_state_machine_callbacks!(sm::StateMachine) =
+replace_state_machine_callbacks!(sm, nothing)
 
-function add_transition_callbacks!(state_machine::StateMachine,
+function add_transition_callbacks!(sm::StateMachine,
     transition_key::Symbol,
     callbacks::TransitionCallback)
 
 end
 
-function replace_transition_callbacks!(state_machine::StateMachine,
+function replace_transition_callbacks!(sm::StateMachine,
     transition_key::Symbol,
     callbacks::Union{TransitionCallback,Nothing})
 
 end
 
-remove_transition_callbacks!(state_machine::StateMachine, transition_key::Symbol) =
-replace_transition_callbacks!(state_machine, transition_key, nothing)
+remove_transition_callbacks!(sm::StateMachine, transition_key::Symbol) =
+replace_transition_callbacks!(sm, transition_key, nothing)
 
-function add_state_callbacks!(state_machine::StateMachine,
+function add_state_callbacks!(sm::StateMachine,
     state_key::Symbol,
     callbacks::StateCallback)
 
 end
 
-function replace_state_callbacks!(state_machine::StateMachine,
+function replace_state_callbacks!(sm::StateMachine,
     state_key::Symbol,
     callbacks::Union{StateCallback,Nothing})
 
 end
 
-remove_state_callbacks!(state_machine::StateMachine, state_key::Symbol) =
-replace_state_callbacks!(state_machine, state_key, nothing)
+remove_state_callbacks!(sm::StateMachine, state_key::Symbol) =
+replace_state_callbacks!(sm, state_key, nothing)
 
-function add_conditions!(state_machine::StateMachine,
+function add_conditions!(sm::StateMachine,
     transition_key::Symbol,
     conditions::OrderedDict{Symbol,Any})
 
 end
 
-function replace_conditions!(state_machine::StateMachine,
+function replace_conditions!(sm::StateMachine,
     transition_key::Symbol,
     conditions::Union{OrderedDict{Symbol,Any},Nothing})
 
 end
 
-remove_conditions!(state_machine::StateMachine, transition_key::Symbol) =
-replace_conditions!(state_machine, transition_key, nothing)
+remove_conditions!(sm::StateMachine, transition_key::Symbol) =
+replace_conditions!(sm, transition_key, nothing)
 
-function new_unique_key(state_machine::StateMachine, type::Type; identifier::AbstractString="")
+function new_unique_key(sm::StateMachine, type::Type; identifier::AbstractString="")
     dict = Dict{Symbol,Any}()
     default_identifier = '_'
     if type == State
         default_identifier = "S"
-        dict = state_machine.states
+        dict = sm.states
     elseif type == Junction
         default_identifier =  "J"
-        dict = state_machine.states
+        dict = sm.states
     elseif type == Transition
         default_identifier =  "T"
-        dict = state_machine.transitions
+        dict = sm.transitions
     else
         error("No identifier defined for $type.")
     end
